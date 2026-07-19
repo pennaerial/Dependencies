@@ -4,3 +4,6 @@
 [submodule "Micro-XRCE-DDS-Client"]
 	path = Micro-XRCE-DDS-Client
 	url = git@github.com:eProsima/Micro-XRCE-DDS-Client.git
+[submodule "Micro-XRCE-DDS-Gen"]
+	path = Micro-XRCE-DDS-Gen
+	url = git@github.com:eProsima/Micro-XRCE-DDS-Gen.git
