@@ -7,3 +7,6 @@
 [submodule "Micro-XRCE-DDS-Gen"]
 	path = Micro-XRCE-DDS-Gen
 	url = git@github.com:eProsima/Micro-XRCE-DDS-Gen.git
+[submodule "Micro-CDR"]
+	path = Micro-CDR
+	url = git@github.com:eProsima/Micro-CDR.git
