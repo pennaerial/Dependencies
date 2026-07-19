@@ -1,0 +1,6 @@
+[submodule "Micro-XRCE-DDS-Agent"]
+	path = Micro-XRCE-DDS-Agent
+	url = git@github.com:eProsima/Micro-XRCE-DDS-Agent.git
+[submodule "Micro-XRCE-DDS-Client"]
+	path = Micro-XRCE-DDS-Client
+	url = git@github.com:eProsima/Micro-XRCE-DDS-Client.git
