@@ -38,8 +38,3 @@ cd "$SCRIPT_DIR/Micro-XRCE-DDS-Gen"
 ./gradlew assemble
 
 echo "Done."
-
-echo
-echo "To make these environment variables available in future shell sessions, run:"
-echo "    echo 'source \"$SCRIPT_DIR/monorepo-deps-env.sh\"' >> ~/.bashrc"
-echo "    source ~/.bashrc"
