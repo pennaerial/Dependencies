@@ -10,3 +10,6 @@
 [submodule "Micro-CDR"]
 	path = Micro-CDR
 	url = https://github.com/eProsima/Micro-CDR.git
+[submodule "libcamera"]
+	path = libcamera
+	url = https://github.com/raspberrypi/libcamera.git
