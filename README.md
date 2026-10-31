@@ -14,7 +14,15 @@ pointer update records that Dependencies commit separately.
 
 The job uses `ubuntu-24.04-arm`, builds a `.deb`, and checks package installation
 and Python import in a fresh Ubuntu 24.04 container. Camera capture still needs
-testing on the Pi. Artifacts include the source SHA and package checksum.
+testing on the Pi. The workflow bundles the `.deb`, `source-revision.txt` and
+`SHA256SUMS` in `libcamera-pi4-noble-arm64.tar.gz` before uploading. GitHub's
+browser artifact download wraps that tarball in a ZIP; extract the ZIP to get
+the tarball. Upload compression is disabled because the tarball is compressed.
+
+`source-revision.txt` records the exact libcamera Git commit used to build the
+package. `SHA256SUMS` contains the SHA-256 checksum of the `.deb`; after
+extracting the tarball, run `sha256sum -c SHA256SUMS` in the extracted directory
+to detect package corruption. The checksum is not a digital signature.
 
 ## Local build
 
@@ -41,9 +49,14 @@ Meson signs them. Upstream license texts are included.
 
 ## Install on the Pi
 
-Transfer the downloaded `.deb` to the Pi, then review the proposed installation:
+Transfer the `.tar.gz` to the Pi, extract it into its own directory, verify the
+package checksum, then review the proposed installation:
 
 ```bash
+mkdir -p libcamera-package
+tar -xzf libcamera-pi4-noble-arm64.tar.gz -C libcamera-package
+cd libcamera-package
+sha256sum -c SHA256SUMS
 sudo apt-get update
 sudo apt-get install --simulate ./pennair-libcamera-rpi_*.deb
 sudo apt-get install ./pennair-libcamera-rpi_*.deb
