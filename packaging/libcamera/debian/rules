@@ -1,0 +1,22 @@
+#!/usr/bin/make -f
+
+%:
+	dh $@ --buildsystem=meson --builddirectory=build
+
+override_dh_auto_configure:
+	dh_auto_configure -- --buildtype=release --wrap-mode=nofallback \
+	  -Dpipelines=rpi/vc4 -Dipas=rpi/vc4 -Dv4l2=enabled \
+	  -Dgstreamer=enabled -Dpycamera=enabled \
+	  -Dpython.platlibdir=/usr/lib/python3/dist-packages \
+	  -Dpython.purelibdir=/usr/lib/python3/dist-packages \
+	  -Dtest=false -Dlc-compliance=disabled -Dcam=disabled -Dqcam=disabled \
+	  -Ddocumentation=disabled -Dlibdw=disabled -Dlibunwind=disabled \
+	  -Dtracing=disabled -Drpi-awb-nn=disabled -Dudev=enabled
+
+# Meson signs installed IPA modules after adjusting their ELF paths.
+# Subsequent ELF rewriting would invalidate those signatures.
+override_dh_strip:
+	@echo "Preserving signed IPA modules (no stripping)."
+
+override_dh_dwz:
+	@echo "Preserving signed IPA modules (no DWARF rewriting)."

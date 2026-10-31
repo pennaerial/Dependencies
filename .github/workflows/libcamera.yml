@@ -1,0 +1,65 @@
+name: Pi 4B libcamera package
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - libcamera
+      - build_libcamera.sh
+      - packaging/libcamera/**
+      - .github/workflows/libcamera.yml
+  pull_request:
+    paths:
+      - libcamera
+      - build_libcamera.sh
+      - packaging/libcamera/**
+      - .github/workflows/libcamera.yml
+
+permissions:
+  contents: read
+
+jobs:
+  package:
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - name: Initialize pinned libcamera
+        run: git submodule update --init --recursive -- libcamera
+      - name: Install packaging prerequisites
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y devscripts equivs shellcheck
+          sudo mk-build-deps --install --remove --tool 'apt-get -y --no-install-recommends' packaging/libcamera/debian/control
+      - name: Check shell script
+        run: |
+          bash -n build_libcamera.sh
+          shellcheck build_libcamera.sh
+      - name: Build Debian package
+        run: ./build_libcamera.sh
+      - name: Check installation in clean Ubuntu 24.04
+        run: |
+          docker run --rm --platform linux/arm64 -v "$PWD/dist/libcamera:/packages:ro" ubuntu:24.04 bash -ec '
+            apt-get update
+            apt-get install -y /packages/*.deb
+            python3 -c "import libcamera"
+            test -n "$(find /usr/share/libcamera/ipa/rpi/vc4 -name imx708.json -print -quit)"
+            test -n "$(find /usr/lib -name ipa_rpi_vc4.so.sign -print -quit)"
+            dpkg-query -W pennair-libcamera-rpi
+            dpkg-query -L pennair-libcamera-rpi | while IFS= read -r path; do
+              if [ -f "$path" ] && head -c 4 "$path" | grep -q "$(printf "\177ELF")"; then
+                output=$(ldd "$path" 2>&1) || { echo "$output"; exit 1; }
+                if echo "$output" | grep -q "not found"; then
+                  echo "$path: $output"
+                  exit 1
+                fi
+              fi
+            done
+          '
+      - uses: actions/upload-artifact@v4
+        with:
+          name: libcamera-pi4-noble-arm64-${{ github.sha }}
+          path: dist/libcamera/
+          if-no-files-found: error
+          retention-days: 30

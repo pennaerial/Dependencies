@@ -1,0 +1,10 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: libcamera
+Source: https://github.com/raspberrypi/libcamera
+
+Files: *
+Copyright: See upstream source files for individual copyright holders.
+License: upstream-multiple
+ The complete upstream license texts are installed under
+ /usr/share/doc/pennair-libcamera-rpi/licenses/.
+ Refer to each source file's SPDX identifier for its applicable license.
