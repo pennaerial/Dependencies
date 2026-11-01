@@ -6,15 +6,17 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/**'
+      - '**/*.sh'
   pull_request:
     paths:
       - '.github/workflows/**'
+      - '**/*.sh'
 
 permissions:
   contents: read
 
 jobs:
-  actionlint:
+  static_checks:
     name: Lint GitHub Actions
     runs-on: ubuntu-latest
     steps:
@@ -25,3 +27,8 @@ jobs:
         run: |
           bash <(curl -fsSL https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
           ./actionlint -color
+
+      - name: Check shell scripts
+        run: find . -type f -name '*.sh' -not -path './.git/*' -exec shellcheck {} +
+
+
