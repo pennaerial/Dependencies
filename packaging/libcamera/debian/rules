@@ -9,7 +9,9 @@ override_dh_auto_configure:
 	  -Dgstreamer=enabled -Dpycamera=enabled \
 	  -Dpython.platlibdir=/usr/lib/python3/dist-packages \
 	  -Dpython.purelibdir=/usr/lib/python3/dist-packages \
-	  -Dtest=false -Dlc-compliance=disabled -Dcam=disabled -Dqcam=disabled \
+	  -Dtest=false -Dlc-compliance=disabled -Dcam=enabled -Dqcam=disabled \
+	  -Dcam-output-kms=enabled -Dcam-output-sdl2=disabled -Dcam-jpeg=disabled \
+	  -Dapps-output-dng=disabled \
 	  -Ddocumentation=disabled -Dlibdw=disabled -Dlibunwind=disabled \
 	  -Dtracing=disabled -Drpi-awb-nn=disabled -Dudev=enabled
 

@@ -7,6 +7,9 @@ apt-get update
 apt-get install -y /packages/*.deb
 
 python3 -c 'import libcamera'
+# Help works without camera/display hardware; the option confirms KMS was built.
+cam_help=$(cam --help)
+[[ "$cam_help" == *--display* ]]
 test -n "$(find /usr/share/libcamera/ipa/rpi/vc4 -name imx708.json -print -quit)"
 test -n "$(find /usr/lib -name ipa_rpi_vc4.so.sign -print -quit)"
 dpkg-query -W pennair-libcamera-rpi
