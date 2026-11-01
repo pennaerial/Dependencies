@@ -1,0 +1,15 @@
+Source: pennair-micro-xrce-dds-agent
+Section: net
+Priority: optional
+Maintainer: Penn Aerial Robotics <software@pennaerial.com>
+Build-Depends: debhelper-compat (= 13), build-essential, cmake, git, ca-certificates, libasio-dev, libtinyxml2-dev
+Standards-Version: 4.6.2
+Homepage: https://github.com/eProsima/Micro-XRCE-DDS-Agent
+Rules-Requires-Root: no
+
+Package: pennair-micro-xrce-dds-agent
+Architecture: arm64
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Micro XRCE-DDS Agent for Ubuntu 24.04 ARM64
+ Bridges XRCE clients over serial, UDP or TCP to Fast DDS.
+ Built with static project libraries and without the P2P profile.

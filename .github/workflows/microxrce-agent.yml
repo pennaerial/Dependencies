@@ -1,0 +1,99 @@
+name: Pi 4B Micro XRCE-DDS Agent
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - Micro-XRCE-DDS-Agent
+      - scripts/build_microxrceagent_arm.sh
+      - packaging/microxrce-agent/**
+      - scripts/tests/microxrce_agent_install.sh
+      - .github/workflows/microxrce-agent.yml
+  pull_request:
+    paths:
+      - Micro-XRCE-DDS-Agent
+      - scripts/build_microxrceagent_arm.sh
+      - packaging/microxrce-agent/**
+      - scripts/tests/microxrce_agent_install.sh
+      - .github/workflows/microxrce-agent.yml
+
+permissions:
+  contents: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build_microxrce_agent:
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - name: Initialize pinned Micro XRCE-DDS Agent
+        run: git submodule update --init --recursive -- Micro-XRCE-DDS-Agent
+
+      - name: Install packaging prerequisites
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends devscripts equivs
+          sudo mk-build-deps --install --remove --tool 'apt-get -y --no-install-recommends' packaging/microxrce-agent/debian/control
+
+      - name: Build Debian package
+        run: ./scripts/build_microxrceagent_arm.sh
+
+      - name: Test Debian package on fresh Ubuntu 24.04 container
+        run: |
+          docker run --rm --platform linux/arm64 \
+            --mount "type=bind,src=$PWD/dist/microxrce-agent,dst=/packages,readonly" \
+            --mount "type=bind,src=$PWD/scripts/tests,dst=/tests,readonly" \
+            ubuntu:24.04 bash /tests/microxrce_agent_install.sh
+
+      - name: Create deployment archive
+        run: |
+          tar -czf dist/microxrceagent-pi4-noble-arm64.tar.gz \
+            -C dist/microxrce-agent .
+
+      - name: Publish releases
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          tag="microxrceagent-${GITHUB_SHA}"
+
+          if ! gh release view "$tag" >/dev/null 2>&1; then
+            gh release create "$tag" \
+              --target "$GITHUB_SHA" \
+              --draft \
+              --title "Pi 4B Micro XRCE-DDS Agent (${GITHUB_SHA:0:12})" \
+              --notes "Ubuntu 24.04 ARM64 Micro XRCE-DDS Agent package."
+          fi
+
+          gh release upload "$tag" \
+            dist/microxrceagent-pi4-noble-arm64.tar.gz --clobber
+
+          gh release edit "$tag" --draft=false --latest=false
+
+          rolling_tag="microxrceagent-latest"
+          notes="Latest successful Ubuntu 24.04 ARM64 build. Archived build: https://github.com/${GH_REPO}/releases/tag/${tag}"
+
+          if ! gh release view "$rolling_tag" >/dev/null 2>&1; then
+            gh release create "$rolling_tag" \
+              --target "$GITHUB_SHA" \
+              --draft \
+              --title "Pi 4B Micro XRCE-DDS Agent — latest" \
+              --notes "$notes"
+          fi
+
+          gh release upload "$rolling_tag" \
+            dist/microxrceagent-pi4-noble-arm64.tar.gz --clobber
+
+          gh release edit "$rolling_tag" \
+            --draft=false --latest=false --notes "$notes"
+
+          # Publishing creates the tag on the first run; advance it on later runs.
+          gh api --method PATCH "repos/${GH_REPO}/git/refs/tags/${rolling_tag}" \
+            -f sha="$GITHUB_SHA" -F force=true >/dev/null

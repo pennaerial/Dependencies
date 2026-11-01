@@ -1,0 +1,5 @@
+pennair-micro-xrce-dds-agent (2.4.3-1~noble) noble; urgency=medium
+
+  * Package the pinned Micro XRCE-DDS Agent for Ubuntu 24.04 ARM64.
+
+ -- Penn Aerial Robotics <software@pennaerial.com>  Sun, 01 Nov 2026 00:00:00 +0000

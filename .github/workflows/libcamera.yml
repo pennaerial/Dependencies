@@ -21,6 +21,10 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   publish_libcamera_package:
     runs-on: ubuntu-24.04-arm
@@ -51,7 +55,7 @@ jobs:
           tar -czf dist/libcamera-pi4-noble-arm64.tar.gz \
             -C dist/libcamera .
 
-      - name: Publish latest release
+      - name: Publish releases
         if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
         env:
           GH_TOKEN: ${{ github.token }}
@@ -71,4 +75,25 @@ jobs:
           gh release upload "$tag" \
             dist/libcamera-pi4-noble-arm64.tar.gz --clobber
 
-          gh release edit "$tag" --draft=false --latest
+          gh release edit "$tag" --draft=false --latest=false
+
+          rolling_tag="libcamera-latest"
+          notes="Latest successful Ubuntu 24.04 ARM64 build. Archived build: https://github.com/${GH_REPO}/releases/tag/${tag}"
+
+          if ! gh release view "$rolling_tag" >/dev/null 2>&1; then
+            gh release create "$rolling_tag" \
+              --target "$GITHUB_SHA" \
+              --draft \
+              --title "Pi 4B libcamera — latest" \
+              --notes "$notes"
+          fi
+
+          gh release upload "$rolling_tag" \
+            dist/libcamera-pi4-noble-arm64.tar.gz --clobber
+
+          gh release edit "$rolling_tag" \
+            --draft=false --latest=false --notes "$notes"
+
+          # Publishing creates the tag on the first run; advance it on later runs.
+          gh api --method PATCH "repos/${GH_REPO}/git/refs/tags/${rolling_tag}" \
+            -f sha="$GITHUB_SHA" -F force=true >/dev/null

@@ -1,0 +1,10 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: Micro XRCE-DDS Agent
+Source: https://github.com/eProsima/Micro-XRCE-DDS-Agent
+
+Files: *
+Copyright: See upstream source files for individual copyright holders.
+License: upstream-multiple
+ The Agent and its statically linked dependencies retain their upstream
+ licenses. Complete license and notice texts are installed in
+ /usr/share/doc/pennair-micro-xrce-dds-agent/licenses/.

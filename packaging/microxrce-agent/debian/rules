@@ -1,0 +1,16 @@
+#!/usr/bin/make -f
+
+%:
+	dh $@ --buildsystem=cmake --builddirectory=build
+
+override_dh_auto_configure:
+	dh_auto_configure -- -DCMAKE_BUILD_TYPE=Release \
+	  -DBUILD_SHARED_LIBS=OFF -DUAGENT_P2P_PROFILE=OFF \
+	  -DUAGENT_BUILD_TESTS=OFF -DUAGENT_BUILD_USAGE_EXAMPLES=OFF
+
+# The superbuild installs dependency development files too; ship only the Agent.
+override_dh_auto_install:
+	install -D -m 0755 build/MicroXRCEAgent debian/pennair-micro-xrce-dds-agent/usr/bin/MicroXRCEAgent
+	mkdir -p debian/pennair-micro-xrce-dds-agent/usr/share/doc/pennair-micro-xrce-dds-agent/licenses
+	cp LICENSE debian/pennair-micro-xrce-dds-agent/usr/share/doc/pennair-micro-xrce-dds-agent/licenses/Agent-LICENSE
+	find build -type f \( -iname 'LICENSE*' -o -iname 'NOTICE*' -o -iname 'COPYING*' -o -iname 'COPYRIGHT*' \) -exec cp --parents -t debian/pennair-micro-xrce-dds-agent/usr/share/doc/pennair-micro-xrce-dds-agent/licenses/ {} +

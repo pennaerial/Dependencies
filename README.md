@@ -2,11 +2,21 @@
 
 Run `./build_all.sh` to build and install the DDS tools.
 
+## Latest downloads
+
+| Component | Latest successful build | Release details |
+| --- | --- | --- |
+| libcamera | [Download](https://github.com/pennaerial/Dependencies/releases/download/libcamera-latest/libcamera-pi4-noble-arm64.tar.gz) | [Release](https://github.com/pennaerial/Dependencies/releases/tag/libcamera-latest) |
+| Micro XRCE-DDS Agent | [Download](https://github.com/pennaerial/Dependencies/releases/download/microxrceagent-latest/microxrceagent-pi4-noble-arm64.tar.gz) | [Release](https://github.com/pennaerial/Dependencies/releases/tag/microxrceagent-latest) |
+
+Workflows update these links' assets after successful main-branch builds.
+Each build is also preserved in a separate commit-tagged release.
+
 ## libcamera — Pi 4B / Ubuntu 24.04 ARM64
 
 The [workflow](.github/workflows/libcamera.yml) builds the pinned Raspberry Pi
 fork, tests the package in a fresh Ubuntu container, and publishes successful
-`main` builds to the latest GitHub Release. Camera capture must be tested on
+`main` builds to a commit-tagged release and `libcamera-latest`. Camera capture must be tested on
 the Pi. Includes `cam` with DRM/KMS preview support (no desktop required).
 Use `cam -l` to list cameras, `cam -c 1 --capture=10 --file` for headless
 capture, or `cam -c 1 --capture --display` with a locally connected monitor.
@@ -28,7 +38,7 @@ Output: `dist/libcamera/`. Use `JOBS=1` on low-memory devices.
 
 ```bash
 curl -fL -o libcamera-pi4-noble-arm64.tar.gz \
-  https://github.com/pennaerial/Dependencies/releases/latest/download/libcamera-pi4-noble-arm64.tar.gz
+  https://github.com/pennaerial/Dependencies/releases/download/libcamera-latest/libcamera-pi4-noble-arm64.tar.gz
 mkdir -p libcamera-package
 tar -xzf libcamera-pi4-noble-arm64.tar.gz -C libcamera-package
 cd libcamera-package
