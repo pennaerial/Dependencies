@@ -8,8 +8,12 @@ apt-get install -y /packages/*.deb
 
 python3 -c 'import libcamera'
 # Help works without camera/display hardware; the option confirms KMS was built.
-cam_help=$(cam --help)
-[[ "$cam_help" == *--display* ]]
+cam_help=$(cam --help 2>&1)
+if [[ "$cam_help" != *--display* ]]; then
+    echo "cam was built without the expected DRM/KMS display option:" >&2
+    echo "$cam_help" >&2
+    exit 1
+fi
 test -n "$(find /usr/share/libcamera/ipa/rpi/vc4 -name imx708.json -print -quit)"
 test -n "$(find /usr/lib -name ipa_rpi_vc4.so.sign -print -quit)"
 dpkg-query -W pennair-libcamera-rpi

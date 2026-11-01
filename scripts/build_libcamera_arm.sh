@@ -59,6 +59,8 @@ echo "Building libcamera $version ($revision) in $work_dir"
 
 # Build a clean export; generated packaging never modifies the source submodule.
 git -C "$SOURCE_DIR" archive HEAD | tar -x -C "$work_dir"
+# Prevent version detection from using the enclosing Dependencies repository.
+printf '%s\n' "$version+git${revision:0:12}" > "$work_dir/.tarball-version"
 cp -a "$DEPENDENCIES_DIR/packaging/libcamera/debian" "$work_dir/debian"
 package_version="$version+git${revision:0:12}-1~noble"
 
