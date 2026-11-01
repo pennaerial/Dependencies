@@ -5,19 +5,21 @@ on:
   push:
     branches: [main]
     paths:
-      - 'libcamera/**'
-      - 'build_libcamera.sh'
+      - 'libcamera'
+      - 'scripts/build_libcamera_arm.sh'
+      - 'scripts/tests/libcamera_install.sh'
       - 'packaging/libcamera/**'
       - '.github/workflows/libcamera.yml'
   pull_request:
     paths:
-      - 'libcamera/**'
-      - 'build_libcamera.sh'
+      - 'libcamera'
+      - 'scripts/build_libcamera_arm.sh'
+      - 'scripts/tests/libcamera_install.sh'
       - 'packaging/libcamera/**'
       - '.github/workflows/libcamera.yml'
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   publish_libcamera_package:
@@ -34,41 +36,39 @@ jobs:
           sudo apt-get install -y devscripts equivs shellcheck
           sudo mk-build-deps --install --remove --tool 'apt-get -y --no-install-recommends' packaging/libcamera/debian/control
 
-      - name: Check shell script
-        run: |
-          bash -n build_libcamera.sh
-          shellcheck build_libcamera.sh
-
       - name: Build Debian package
-        run: ./build_libcamera.sh
+        run: ./scripts/build_libcamera_arm.sh
 
-      - name: Check installation in clean Ubuntu 24.04
+      - name: Test Debian package on fresh Ubuntu 24.04 container
         run: |
-          docker run --rm --platform linux/arm64 -v "$PWD/dist/libcamera:/packages:ro" ubuntu:24.04 bash -ec '
-            apt-get update
-            apt-get install -y /packages/*.deb
-            python3 -c "import libcamera"
-            test -n "$(find /usr/share/libcamera/ipa/rpi/vc4 -name imx708.json -print -quit)"
-            test -n "$(find /usr/lib -name ipa_rpi_vc4.so.sign -print -quit)"
-            dpkg-query -W pennair-libcamera-rpi
-            dpkg-query -L pennair-libcamera-rpi | while IFS= read -r path; do
-              if [ -f "$path" ] && head -c 4 "$path" | grep -q "$(printf "\177ELF")"; then
-                output=$(ldd "$path" 2>&1) || { echo "$output"; exit 1; }
-                if echo "$output" | grep -q "not found"; then
-                  echo "$path: $output"
-                  exit 1
-                fi
-              fi
-            done
-          '
+          docker run --rm --platform linux/arm64 \
+            --mount "type=bind,src=$PWD/dist/libcamera,dst=/packages,readonly" \
+            --mount "type=bind,src=$PWD/scripts/tests,dst=/tests,readonly" \
+            ubuntu:24.04 bash /tests/libcamera_install.sh
+
       - name: Create deployment archive
         run: |
-          tar -czf dist/libcamera-pi4-noble-arm64.tar.gz -C dist/libcamera .
+          tar -czf dist/libcamera-pi4-noble-arm64.tar.gz \
+            -C dist/libcamera .
 
-      - uses: actions/upload-artifact@v4
-        with:
-          name: libcamera-pi4-noble-arm64-${{ github.sha }}
-          path: dist/libcamera-pi4-noble-arm64.tar.gz
-          compression-level: 0
-          if-no-files-found: error
-          retention-days: 30
+      - name: Publish latest release
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          tag="libcamera-${GITHUB_SHA}"
+
+          if ! gh release view "$tag" >/dev/null 2>&1; then
+            gh release create "$tag" \
+              --target "$GITHUB_SHA" \
+              --draft \
+              --title "Pi 4B libcamera (${GITHUB_SHA:0:12})" \
+              --notes "Ubuntu 24.04 ARM64 libcamera package."
+          fi
+
+          gh release upload "$tag" \
+            dist/libcamera-pi4-noble-arm64.tar.gz --clobber
+
+          gh release edit "$tag" --draft=false --latest

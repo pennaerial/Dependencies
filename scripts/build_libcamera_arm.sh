@@ -29,7 +29,7 @@ JOBS="${JOBS:-4}"
 	exit 1
 }
 
-# checking build tools
+# checking installed build tools
 for tool in git meson ninja dpkg-buildpackage dh; do
 	command -v "$tool" >/dev/null || {
 		echo "Missing $tool; see $DEPENDENCIES_DIR/README.md prerequisites." >&2
@@ -45,6 +45,7 @@ if [[ -n "$(git -C "$SOURCE_DIR" status --porcelain --untracked-files=no)" ]]; t
 	exit 1
 fi
 
+# check libcamera version
 revision=$(git -C "$SOURCE_DIR" rev-parse HEAD)
 version=$(sed -n "s/^[[:space:]]*version : '\([^']*\)',/\1/p" "$SOURCE_DIR/meson.build")
 [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || {
@@ -55,6 +56,7 @@ version=$(sed -n "s/^[[:space:]]*version : '\([^']*\)',/\1/p" "$SOURCE_DIR/meson
 mkdir -p "$DEPENDENCIES_DIR/.build" "$DEPENDENCIES_DIR/dist/libcamera"
 work_dir=$(mktemp -d "$DEPENDENCIES_DIR/.build/libcamera.XXXXXX")
 echo "Building libcamera $version ($revision) in $work_dir"
+
 # Build a clean export; generated packaging never modifies the source submodule.
 git -C "$SOURCE_DIR" archive HEAD | tar -x -C "$work_dir"
 cp -a "$DEPENDENCIES_DIR/packaging/libcamera/debian" "$work_dir/debian"
