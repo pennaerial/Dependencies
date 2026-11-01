@@ -3,7 +3,14 @@ set -euo pipefail
 export DEBIAN_FRONTEND=noninteractive
 apt-get update
 apt-get install -y --no-install-recommends /packages/pennair-micro-xrce-dds-agent_*_arm64.deb
-MicroXRCEAgent --help
+# Upstream 2.4.3 returns 1 after displaying help.
+help_status=0
+help_output=$(MicroXRCEAgent --help 2>&1) || help_status=$?
+printf '%s\n' "$help_output"
+if ((help_status > 1)) || [[ "$help_output" != *"Usage:"* || "$help_output" != *"--baudrate"* ]]; then
+    echo "Agent help check failed (exit $help_status)." >&2
+    exit 1
+fi
 dependencies=$(ldd /usr/bin/MicroXRCEAgent)
 printf '%s\n' "$dependencies"
 if [[ "$dependencies" == *"not found"* ]]; then
