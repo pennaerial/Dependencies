@@ -5,39 +5,43 @@ on:
   push:
     branches: [main]
     paths:
-      - libcamera
-      - build_libcamera.sh
-      - packaging/libcamera/**
-      - .github/workflows/libcamera.yml
+      - 'libcamera/**'
+      - 'build_libcamera.sh'
+      - 'packaging/libcamera/**'
+      - '.github/workflows/libcamera.yml'
   pull_request:
     paths:
-      - libcamera
-      - build_libcamera.sh
-      - packaging/libcamera/**
-      - .github/workflows/libcamera.yml
+      - 'libcamera/**'
+      - 'build_libcamera.sh'
+      - 'packaging/libcamera/**'
+      - '.github/workflows/libcamera.yml'
 
 permissions:
   contents: read
 
 jobs:
-  package:
+  publish_libcamera_package:
     runs-on: ubuntu-24.04-arm
     timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
       - name: Initialize pinned libcamera
         run: git submodule update --init --recursive -- libcamera
+
       - name: Install packaging prerequisites
         run: |
           sudo apt-get update
           sudo apt-get install -y devscripts equivs shellcheck
           sudo mk-build-deps --install --remove --tool 'apt-get -y --no-install-recommends' packaging/libcamera/debian/control
+
       - name: Check shell script
         run: |
           bash -n build_libcamera.sh
           shellcheck build_libcamera.sh
+
       - name: Build Debian package
         run: ./build_libcamera.sh
+
       - name: Check installation in clean Ubuntu 24.04
         run: |
           docker run --rm --platform linux/arm64 -v "$PWD/dist/libcamera:/packages:ro" ubuntu:24.04 bash -ec '
@@ -60,6 +64,7 @@ jobs:
       - name: Create deployment archive
         run: |
           tar -czf dist/libcamera-pi4-noble-arm64.tar.gz -C dist/libcamera .
+
       - uses: actions/upload-artifact@v4
         with:
           name: libcamera-pi4-noble-arm64-${{ github.sha }}
