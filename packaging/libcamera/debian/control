@@ -10,7 +10,7 @@ Rules-Requires-Root: no
 Package: pennair-libcamera-rpi
 Architecture: arm64
 Depends: ${shlibs:Depends}, ${python3:Depends}, ${misc:Depends}
-Conflicts: libcamera-dev, libcamera-tools, libcamera-ipa, libcamera-v4l2, libcamera0.2, libcamera0.3, libcamera0.4, libcamera0.5, libcamera0.6, libcamera0.7, python3-libcamera, gstreamer1.0-libcamera, ros-jazzy-libcamera
+Conflicts: libcamera-dev, libcamera-tools, libcamera-ipa, libcamera-v4l2, libcamera0.2, libcamera0.3, libcamera0.4, libcamera0.5, libcamera0.6, libcamera0.7, libcamera0.8, python3-libcamera, gstreamer1.0-libcamera, ros-jazzy-libcamera
 Description: Raspberry Pi libcamera fork for Pi 4B on Ubuntu 24.04
  Includes the VC4 pipeline and IPA, tuning data, proxy helpers, development
  files, Python bindings, V4L2 compatibility layer, GStreamer plugin and
