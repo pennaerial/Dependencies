@@ -16,6 +16,9 @@ if [[ "$cam_help" != *--display* ]]; then
 fi
 test -n "$(find /usr/share/libcamera/ipa/rpi/vc4 -name imx708.json -print -quit)"
 test -n "$(find /usr/lib -name ipa_rpi_vc4.so.sign -print -quit)"
+# Pi 5
+test -n "$(find /usr/share/libcamera/ipa/rpi/pisp -name imx708.json -print -quit)"
+test -n "$(find /usr/lib -name ipa_rpi_pisp.so.sign -print -quit)"
 dpkg-query -W pennair-libcamera-rpi
 
 # Check the shared libraries, Python extensions, plugins and helper executables.
